@@ -1,0 +1,39 @@
+package uni.pe.Eureka.Service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class eurekaService {
+	
+	//METODO SIN DTO
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+	
+	public List<Map<String,Object>> resumenMovimientoSucursal (){
+		
+		String sql;
+		sql= " SELECT ";
+		sql+= "    cuenta.chr_sucucodigo AS CODIGO,";
+		sql+= "    sucursal.vch_sucunombre AS NOMBRE, ";
+		sql+= "    moneda.vch_monedescripcion AS MONEDA, ";
+		sql+= "    SUM(CASE WHEN TipoMovimiento.vch_tipoaccion = 'INGRESO' THEN Movimiento.dec_moviimporte ELSE 0 END) AS INGRESO,  ";
+		sql+= "    SUM(CASE WHEN  TipoMovimiento.vch_tipoaccion = 'SALIDA' THEN Movimiento.dec_moviimporte ELSE 0 END) AS SALIDA  ";
+		sql+= "FROM  Movimiento ";
+		sql+= "     JOIN cuenta ON cuenta.chr_cuencodigo = Movimiento.chr_cuencodigo  ";
+		sql+= "    JOIN sucursal ON sucursal.chr_sucucodigo = cuenta.chr_sucucodigo ";
+		sql+= "     JOIN Moneda ON Moneda.chr_monecodigo = cuenta.chr_monecodigo ";
+		sql+= "     JOIN TipoMovimiento ON TipoMovimiento.chr_tipocodigo = Movimiento.chr_tipocodigo ";
+		sql+= "GROUP BY  ";
+		sql+= "    cuenta.chr_sucucodigo, sucursal.vch_sucunombre, moneda.vch_monedescripcion  ";
+		sql+= "order by  ";
+		sql+= "    cuenta.chr_sucucodigo, ";
+		sql+= "    moneda.vch_monedescripcion desc;";
+		return jdbcTemplate.queryForList(sql);
+	}
+
+}

@@ -1,0 +1,6 @@
+package uni.pe.Eureka.Dto;
+
+public class mobimientoDto {
+
+	 String 
+}

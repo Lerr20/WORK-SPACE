@@ -1,0 +1,55 @@
+package uni.pe.Eureka.Dto;
+
+public class TransferenciaDto {
+
+	String CuentaOrigen;
+	String CuentaDestino;
+	String empleado;
+	double importe; // MONTO A TRANSFERIR
+
+	public TransferenciaDto() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public TransferenciaDto(String cuentaOrigen, String cuentaDestino, String empleado, double importe) {
+		super();
+		this.CuentaOrigen = cuentaOrigen;
+		this.CuentaDestino = cuentaDestino;
+		this.empleado = empleado;
+		this.importe = importe;
+	}
+
+	public String getCuentaOrigen() {
+		return CuentaOrigen;
+	}
+
+	public void setCuentaOrigen(String cuentaOrigen) {
+		CuentaOrigen = cuentaOrigen;
+	}
+
+	public String getCuentaDestino() {
+		return CuentaDestino;
+	}
+
+	public void setCuentaDestino(String cuentaDestino) {
+		this.CuentaDestino = cuentaDestino;
+	}
+
+	public String getEmpleado() {
+		return empleado;
+	}
+
+	public void setEmpleado(String empleado) {
+		this.empleado = empleado;
+	}
+
+	public double getImporte() {
+		return importe;
+	}
+
+	public void setImporte(double importe) {
+		this.importe = importe;
+	}
+	
+
+}

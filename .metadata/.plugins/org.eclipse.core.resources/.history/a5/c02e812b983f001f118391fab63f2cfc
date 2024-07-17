@@ -1,0 +1,37 @@
+package uni.pe.Eureka.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import uni.pe.Eureka.Dto.movimientoDto;
+import uni.pe.Eureka.Service.eurekaService;
+
+@RestController
+@RequestMapping("/eureka")
+public class eurekaController {
+	@Autowired
+	private eurekaService eurekaservice;
+
+	@GetMapping("/movimientos")
+	public List<Map<String, Object>> listadoMovimientosSucursal() {
+		return eurekaservice.resumenMovimientoSucursal();
+	}
+
+	@GetMapping("/movimiento/{codigo}")
+	public ResponseEntity<?> getMovimiento(@PathVariable String codigo) {
+	    List<movimientoDto> beans = eurekaService.resumenMovimientosId(codigo);
+	    
+	    if (beans == null || beans.isEmpty()) {
+	        return ResponseEntity.notFound().build();
+	    }
+	    
+	    return ResponseEntity.ok(beans);
+	}
+}

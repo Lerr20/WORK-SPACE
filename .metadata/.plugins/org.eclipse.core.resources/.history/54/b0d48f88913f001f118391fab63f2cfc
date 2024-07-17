@@ -1,0 +1,25 @@
+package uni.pe.Eureka.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import uni.pe.Eureka.Service.eurekaService;
+
+@RestController
+@RequestMapping("/eureka")
+public class eurekaController {
+	@Autowired
+	private eurekaService eurekaservice;
+	
+	@GetMapping("/movimientos")
+	public List<Map<String,Object>> listadoMovimientosSucursal(){
+		return eurekaservice.resumenMovimientoSucursal();
+	}
+	
+	 
+}

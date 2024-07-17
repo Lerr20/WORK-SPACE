@@ -1,0 +1,5 @@
+spring.application.name=Educa
+# SQL Server settings
+spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=Educa;encrypt=True;TrustServerCertificate=True;
+spring.datasource.username=sa
+spring.datasource.password=sql

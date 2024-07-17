@@ -1,0 +1,241 @@
+package uni.pe.Eureka.Service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import uni.pe.Eureka.Dto.CuentaDto;
+import uni.pe.Eureka.Dto.TransferenciaDto;
+import uni.pe.Eureka.Dto.idtipoDto;
+import uni.pe.Eureka.Dto.movimientoDto;
+
+@Service
+public class eurekaService {
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	// METODO SIN DTO PARA SOLO MOSTRAR
+	public List<Map<String, Object>> resumenMovimientoSucursal() {
+
+		String sql;
+		List<Map<String, Object>> lista;
+		sql = " SELECT ";
+		sql += "    cuenta.chr_sucucodigo AS CODIGO,";
+		sql += "    sucursal.vch_sucunombre AS NOMBRE, ";
+		sql += "    moneda.vch_monedescripcion AS MONEDA, ";
+		sql += "    SUM(CASE WHEN TipoMovimiento.vch_tipoaccion = 'INGRESO' THEN Movimiento.dec_moviimporte ELSE 0 END) AS INGRESO,  ";
+		sql += "    SUM(CASE WHEN  TipoMovimiento.vch_tipoaccion = 'SALIDA' THEN Movimiento.dec_moviimporte ELSE 0 END) AS SALIDA  ";
+		sql += "FROM  Movimiento ";
+		sql += "     JOIN cuenta ON cuenta.chr_cuencodigo = Movimiento.chr_cuencodigo  ";
+		sql += "    JOIN sucursal ON sucursal.chr_sucucodigo = cuenta.chr_sucucodigo ";
+		sql += "     JOIN Moneda ON Moneda.chr_monecodigo = cuenta.chr_monecodigo ";
+		sql += "     JOIN TipoMovimiento ON TipoMovimiento.chr_tipocodigo = Movimiento.chr_tipocodigo ";
+		sql += "GROUP BY  ";
+		sql += "    cuenta.chr_sucucodigo, sucursal.vch_sucunombre, moneda.vch_monedescripcion  ";
+		sql += "order by  ";
+		sql += "    cuenta.chr_sucucodigo, ";
+		sql += "    moneda.vch_monedescripcion desc;";
+		lista= jdbcTemplate.queryForList(sql);
+		return lista;
+	}
+
+	// METODO CON DTO PARA MOSTRAR DE ACUERDO A UN CODIGO ESPECIAL
+
+	public  List<movimientoDto> resumenMovimientosId(String codigo) {
+		
+		List<movimientoDto> lista = null;
+		String sql;
+		sql= " SELECT ";
+		sql+= "    cuenta.chr_sucucodigo AS CODIGO,";
+		sql+= "    sucursal.vch_sucunombre AS NOMBRE, ";
+		sql+= "    moneda.vch_monedescripcion AS MONEDA, ";
+		sql+= "    SUM(CASE WHEN TipoMovimiento.vch_tipoaccion = 'INGRESO' THEN Movimiento.dec_moviimporte ELSE 0 END) AS INGRESO,  ";
+		sql+= "    SUM(CASE WHEN  TipoMovimiento.vch_tipoaccion = 'SALIDA' THEN Movimiento.dec_moviimporte ELSE 0 END) AS SALIDA  ";
+		sql+= "FROM  Movimiento ";
+		sql+= "     JOIN cuenta ON cuenta.chr_cuencodigo = Movimiento.chr_cuencodigo  ";
+		sql+= "    JOIN sucursal ON sucursal.chr_sucucodigo = cuenta.chr_sucucodigo ";
+		sql+= "     JOIN Moneda ON Moneda.chr_monecodigo = cuenta.chr_monecodigo ";
+		sql+= "     JOIN TipoMovimiento ON TipoMovimiento.chr_tipocodigo = Movimiento.chr_tipocodigo";
+		sql+= " where cuenta.chr_sucucodigo= ? ";
+		sql+= "GROUP BY  ";
+		sql+= "    cuenta.chr_sucucodigo, sucursal.vch_sucunombre, moneda.vch_monedescripcion  ";
+		sql+= "order by  ";
+		sql+= "    cuenta.chr_sucucodigo, ";
+		sql+= "    moneda.vch_monedescripcion desc;";
+		
+		try {
+	        lista = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(movimientoDto.class), codigo);
+	    } catch (Exception e) {
+	        // ManejoDeExcepciones
+	    }
+
+	    return lista;
+	}
+	
+	//METODO SIN DTO PARA CUENTAS ACTIVAS
+	
+	public List<Map<String, Object>> resumenCuentasActivas(){
+		
+		List<Map<String, Object>> lista;
+		String sql="";
+		sql ="SELECT ";
+		sql+= "    cuenta.chr_sucucodigo AS IDSUCURSAL, ";
+		sql+= "    sucursal.vch_sucunombre AS NOMBRE, ";
+		sql+= "    SUM(CASE WHEN cuenta.vch_cuenestado = 'ACTIVO' AND cuenta.chr_monecodigo = '01' THEN 1 ELSE 0 END) AS SOLES, ";
+		sql+= "    SUM(CASE WHEN cuenta.vch_cuenestado = 'ACTIVO' AND cuenta.chr_monecodigo = '02' THEN 1 ELSE 0 END) AS DOLARES ";
+		sql+= "FROM ";
+		sql+= "    cuenta ";
+		sql+= "JOIN ";
+		sql+= "    sucursal ON sucursal.chr_sucucodigo = cuenta.chr_sucucodigo ";
+		sql+= "GROUP BY ";
+		sql+= "    cuenta.chr_sucucodigo,";
+		sql+= "    sucursal.vch_sucunombre ";
+		sql+= "ORDER BY ";
+		sql+= "    cuenta.chr_sucucodigo;";
+		
+		lista =jdbcTemplate.queryForList(sql);
+		return lista;
+	} 
+	
+	//METODO CON DTO PARA CUENTAS ACTIVAS POR DETERMINADA SUCURSAL
+	
+	public List<CuentaDto> cuentasActivasPorSucursal(String codigo){
+		
+		List<CuentaDto> lista = null;
+		String sql;
+		sql =" SELECT ";
+		sql+= "    cuenta.chr_sucucodigo AS IDSUCURSAL, ";
+		sql+= "    sucursal.vch_sucunombre AS NOMBRE, ";
+		sql+= "    SUM(CASE WHEN cuenta.vch_cuenestado = 'ACTIVO' AND cuenta.chr_monecodigo = '01' THEN 1 ELSE 0 END) AS SOLES, ";
+		sql+= "    SUM(CASE WHEN cuenta.vch_cuenestado = 'ACTIVO' AND cuenta.chr_monecodigo = '02' THEN 1 ELSE 0 END) AS DOLARES  ";
+		sql+= "FROM  ";
+		sql+= "    cuenta ";
+		sql+= "JOIN  ";
+		sql+= "    sucursal ON sucursal.chr_sucucodigo = cuenta.chr_sucucodigo ";
+		sql+= "	where  cuenta.chr_sucucodigo=? ";
+		sql+= "GROUP BY  ";
+		sql+= "    cuenta.chr_sucucodigo, ";
+		sql+= "    sucursal.vch_sucunombre  ";
+		sql+= "ORDER BY  ";
+		sql+= "    cuenta.chr_sucucodigo;";
+		
+		try {
+	        lista = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(CuentaDto.class), codigo);
+	    } catch (Exception e) {
+	        // ManejoDeExcepciones
+	    }
+
+	    return lista;
+	}
+	
+	
+	//RESUMEN DE MOVIMIENOS POR TIPO DE ACCION
+	
+	public List<Map<String, Object>> resumenMovimientosPorAccion(){
+		
+		String sql;
+		List<Map<String, Object>> lista;
+		sql="SELECT ";
+		sql+= "    TipoMovimiento.chr_tipocodigo AS IDTIPO, ";
+		sql+= "	TipoMovimiento.vch_tipodescripcion AS DESCRIPCION, ";
+		sql+= "	TipoMovimiento.vch_tipoaccion AS ACCION, ";
+		sql+= "	SUM(CASE WHEN Cuenta.chr_monecodigo = '01' THEN Movimiento.dec_moviimporte ELSE 0 END) AS SOLES, ";
+		sql+= "	SUM(CASE WHEN Cuenta.chr_monecodigo = '02' THEN Movimiento.dec_moviimporte ELSE 0 END) AS DOLARES ";
+		sql+= "FROM  TipoMovimiento ";
+		sql+= "JOIN  Movimiento ON TipoMovimiento.chr_tipocodigo = Movimiento.chr_tipocodigo ";
+		sql+= "JOIN  Cuenta ON Cuenta.chr_cuencodigo = Movimiento.chr_cuencodigo ";
+		sql+= "GROUP BY TipoMovimiento.chr_tipocodigo, TipoMovimiento.vch_tipodescripcion, TipoMovimiento.vch_tipoaccion ";
+		sql+= "ORDER BY TipoMovimiento.chr_tipocodigo, TipoMovimiento.vch_tipodescripcion;";
+		
+		lista =jdbcTemplate.queryForList(sql);
+		return lista;
+	}
+	
+	
+	//METODO CON DTO PARA RESUMEN POR IDTIPO DE MOVIMIENTO
+	public List<idtipoDto> resumenMovimientosPorAccionId (String codigo){
+	    
+		List<idtipoDto> lista =null;
+		String sql;
+		sql =" SELECT  ";
+		sql+= "    TipoMovimiento.chr_tipocodigo AS IDTIPO, ";
+		sql+= "	TipoMovimiento.vch_tipodescripcion AS DESCRIPCION, ";
+		sql+= "	TipoMovimiento.vch_tipoaccion AS ACCION, ";
+		sql+= "	SUM(CASE WHEN Cuenta.chr_monecodigo = '01' THEN Movimiento.dec_moviimporte ELSE 0 END) AS SOLES, ";
+		sql+= "	SUM(CASE WHEN Cuenta.chr_monecodigo = '02' THEN Movimiento.dec_moviimporte ELSE 0 END) AS DOLARES ";
+		sql+= "FROM  TipoMovimiento ";
+		sql+= "JOIN  Movimiento ON TipoMovimiento.chr_tipocodigo = Movimiento.chr_tipocodigo ";
+		sql+= "JOIN  Cuenta ON Cuenta.chr_cuencodigo = Movimiento.chr_cuencodigo ";
+		sql+= "where TipoMovimiento.chr_tipocodigo=? ";
+		sql+= "GROUP BY TipoMovimiento.chr_tipocodigo, TipoMovimiento.vch_tipodescripcion, TipoMovimiento.vch_tipoaccion ";
+		sql+= "ORDER BY TipoMovimiento.chr_tipocodigo, TipoMovimiento.vch_tipodescripcion; ";
+			
+		try {
+	        lista = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(idtipoDto.class), codigo);
+	    } catch (Exception e) {
+	        // ManejoDeExcepciones
+	    }
+
+	    return lista;
+		
+	}
+	
+	//TRANSFERENCIA
+	@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+	public TransferenciaDto transferencia(TransferenciaDto  bean) {
+		
+		String sql;
+		double saldo;
+		int conta;
+		// VERIFICAR EMPLEADO
+		verificarEmpleado(bean.getEmpleado());
+	
+		//VERIFICAR IMPORTE
+		if(bean.getImporte()<=0) {
+			throw new RuntimeException("El importe debe ser positivo.");
+		}
+		
+		//VALIDAR QUE LAS CUENTAS EXISTAN 
+		sql=" select count(1) cont from cuenta  where chr_cuencodigo=? ";
+		conta=jdbcTemplate.queryForObject(sql,Integer.class, bean.getCuentaOrigen());
+		if(conta ==0) {
+			throw new RuntimeException("La cuenta origen no existe");
+		}
+		
+		sql=" select count(1) cont from cuenta  where chr_cuencodigo=? ";
+		conta=jdbcTemplate.queryForObject(sql,Integer.class, bean.getCuentaDestino());
+		if(conta ==0) {
+			throw new RuntimeException("La cuenta destino no existe");
+		}
+		
+		//VERIFICAR SALDO DE CUENTA ORIGEN
+		sql=" select dec_cuensaldo from cuenta  with (UPDLOCK) where chr_cuencodigo=?;";
+		saldo=jdbcTemplate.queryForObject(sql, Double.class,bean.getCuentaOrigen());
+		if(bean.getImporte()>saldo) {
+			throw new RuntimeException("saldo insuficiente");
+		}
+		
+		
+		
+	}
+	
+	private void verificarEmpleado(String empleado) {
+		
+		String sql;
+		int conta;
+		sql="select count(1) from Asignado where chr_emplcodigo =? and dtt_asigfechabaja is NULL;";
+		conta=jdbcTemplate.queryForObject(sql,Integer.class, empleado);
+		
+		if (conta != 1) {
+			throw new RuntimeException("Empleado no existe.");
+		}
+	}
+	
+}

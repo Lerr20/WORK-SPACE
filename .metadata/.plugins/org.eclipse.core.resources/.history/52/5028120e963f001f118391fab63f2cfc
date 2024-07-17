@@ -1,0 +1,65 @@
+package uni.pe.Eureka.Dto;
+
+public class movimientoDto {
+ 
+	 String codigo;
+	 String nombre;
+	 String moneda;
+	 String ingreso;
+	 String salida;
+	 
+	 public movimientoDto() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public movimientoDto(String codigo, String nombre, String moneda, String ingreso, String salida) {
+		super();
+		this.codigo = codigo;
+		this.nombre = nombre;
+		this.moneda = moneda;
+		this.ingreso = ingreso;
+		this.salida = salida;
+	}
+
+	public String getCodigo() {
+		return codigo;
+	}
+
+	public void setCodigo(String codigo) {
+		this.codigo = codigo;
+	}
+
+	public String getNombre() {
+		return nombre;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+
+	public String getMoneda() {
+		return moneda;
+	}
+
+	public void setMoneda(String moneda) {
+		this.moneda = moneda;
+	}
+
+	public String getIngreso() {
+		return ingreso;
+	}
+
+	public void setIngreso(String ingreso) {
+		this.ingreso = ingreso;
+	}
+
+	public String getSalida() {
+		return salida;
+	}
+
+	public void setSalida(String salida) {
+		this.salida = salida;
+	}
+	 
+	 
+}

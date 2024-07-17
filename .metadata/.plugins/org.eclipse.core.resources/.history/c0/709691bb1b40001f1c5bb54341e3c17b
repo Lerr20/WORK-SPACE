@@ -1,0 +1,72 @@
+package uni.pe.Eureka.Service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import uni.pe.Eureka.Dto.TransferenciaDto;
+
+public class eurekaTransaccion {
+ 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	
+	//TRANSFERENCIA
+	@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+	public TransferenciaDto realizarTransferencia(TransferenciaDto bean) {
+		
+		//VERIFICAR EMPLEADO
+		verificarEmpleado(bean.getEmpleado());
+		
+		//VERIFICAR CUENTA DESTINO
+		verificarCuentaDestino(bean.getCuentaDestino());
+		//VERIFICAR CUENTA ORIGEN
+		verificarCuentaOrigen(bean.getCuentaOrigen());
+	
+		
+		return bean;
+	}
+	
+	//METODO PARA VERIFICAR EMPLEADO
+	@Transactional(propagation = Propagation.NESTED)
+	private void verificarEmpleado(String empleado) {
+		String sql;
+		int cont;
+		sql="select count(1) from Asignado where chr_emplcodigo =? and dtt_asigfechabaja is NULL;";
+		cont=jdbcTemplate.queryForObject(sql,Integer.class, empleado);
+		
+		if (cont != 1) {
+			throw new RuntimeException("Empleado no existe.");
+		}
+	}
+	
+	//METODO PARA VERIFICAR CUENTA ORIGEN
+	
+	@Transactional(propagation = Propagation.NESTED)
+	private void verificarCuentaOrigen(String origen) {
+		String sql;
+		int cont;
+		sql="select count(1) from Cuenta where chr_cuencodigo=? ;";
+		cont=jdbcTemplate.queryForObject(sql,Integer.class, origen);
+		
+		if (cont != 1) {
+			throw new RuntimeException("cuenta origen no existe.");
+		}
+	}
+	
+	//METODO PARA VERIFICAR CUENTA DESTINO
+	
+		@Transactional(propagation = Propagation.NESTED)
+		private void verificarCuentaDestino(String destino) {
+			String sql;
+			int cont;
+			sql="select count(1) from Cuenta where chr_cuencodigo=? ;";
+			cont=jdbcTemplate.queryForObject(sql,Integer.class, destino);
+			
+			if (cont != 1) {
+				throw new RuntimeException("cuenta destino no existe.");
+			}
+		}
+}
